@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TypingPro - مرحله به مرحله</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      text-align: center;
+      padding: 30px;
+      color: #333;
+    }
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    #levelName {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #007acc;
+    }
+    #timer {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+    #sentence {
+      font-size: 22px;
+      margin: 20px 0;
+      padding: 10px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #input {
+      padding: 10px;
+      width: 80%;
+      max-width: 600px;
+      font-size: 18px;
+      border: 2px solid #007acc;
+      border-radius: 6px;
+      outline: none;
+    }
+    #input:disabled {
+      background-color: #ddd;
+    }
+    #scoreBoard {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #message {
+      margin-top: 30px;
+      font-size: 24px;
+      color: green;
+      font-weight: bold;
+    }
+    #startBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #startBtn:hover {
+      background-color: #005f99;
+    }
+  </style>
+</head>
+<body>
+  <h1>TypingPro - مرحله به مرحله</h1>
+  <div id="levelName">سطح: آسان</div>
+  <div id="timer">زمان: <span id="time">60</span> ثانیه</div>
+  <div id="sentence">در حال بارگذاری...</div>
+  <input type="text" id="input" placeholder="اینجا تایپ کن..." disabled />
+  <div id="scoreBoard">
+    امتیاز: <span id="score">0</span><br />
+    سرعت (WPM): <span id="wpm">0</span><br />
+    دقت: <span id="accuracy">100%</span>
+  </div>
+  <button id="startBtn">شروع بازی</button>
+  <div id="message"></div>
+
+  <script>
+    const levels = [
+      {
+        name: 'آسان',
+        sentences: [
+          "cat sits on mat",
+          "dog barks loud",
+          "sun is bright"
+        ]
+      },
+      {
+        name: 'متوسط',
+        sentences: [
+          "The quick brown fox jumps over the lazy dog.",
+          "Typing helps improve your speed and accuracy.",
+          "Practice daily to get better results."
+        ]
+      },
+      {
+        name: 'سخت',
+        sentences: [
+          "Sometimes, typing fast requires intense concentration and rhythm.",
+          "Success in typing relies not only on speed but also on precision.",
+          "With consistent practice, anyone can become a typing expert."
+        ]
+      }
+    ];
+
+    let currentLevelIndex = 0;
+    let score = 0;
+    let correctChars = 0;
+    let totalTyped = 0;
+    let currentSentence = '';
+    let timer = 60;
+    let interval;
+
+    const levelNameDiv = document.getElementById('levelName');
+    const sentenceDiv = document.getElementById('sentence');
+    const input = document.getElementById('input');
+    const scoreSpan = document.getElementById('score');
+    const timeSpan = document.getElementById('time');
+    const wpmSpan = document.getElementById('wpm');
+    const accuracySpan = document.getElementById('accuracy');
+    const messageDiv = document.getElementById('message');
+    const startBtn = document.getElementById('startBtn');
+
+    function setNewSentence() {
+      const level = levels[currentLevelIndex];
+      const list = level.sentences;
+      currentSentence = list[Math.floor(Math.random() * list.length)];
+      sentenceDiv.textContent = currentSentence;
+      input.value = '';
+    }
+
+    function updateScoreBoard() {
+      scoreSpan.textContent = score;
+      const minutes = (60 - timer) / 60 || 1;
+      const wpm = Math.round((correctChars / 5) / minutes) || 0;
+      const accuracy = Math.round((correctChars / totalTyped) * 100) || 100;
+      wpmSpan.textContent = wpm;
+      accuracySpan.textContent = accuracy + '%';
+    }
+
+    function startTimer() {
+      timer = 60;
+      timeSpan.textContent = timer;
+      interval = setInterval(() => {
+        timer--;
+        timeSpan.textContent = timer;
+        if (timer <= 0) {
+          clearInterval(interval);
+          input.disabled = true;
+          nextLevel();
+        }
+      }, 1000);
+    }
+
+    function nextLevel() {
+      currentLevelIndex++;
+      if (currentLevelIndex >= levels.length) {
+        messageDiv.textContent = "تبریک! همه مراحل را با موفقیت گذراندید.";
+        startBtn.disabled = false;
+        input.disabled = true;
+        sentenceDiv.textContent = '';
+      } else {
+        messageDiv.textContent = '';
+        levelNameDiv.textContent = 'سطح: ' + levels[currentLevelIndex].name;
+        score = 0;
+        correctChars = 0;
+        totalTyped = 0;
+        input.disabled = false;
+        startTimer();
+        setNewSentence();
+        input.focus();
+        updateScoreBoard();
+      }
+    }
+
+    input.addEventListener('input', () => {
+      const typed = input.value;
+      totalTyped++;
+
+      if (typed === currentSentence) {
+        score++;
+        correctChars += typed.length;
+        scoreSpan.textContent = score;
+        setNewSentence();
+      }
+      updateScoreBoard();
+    });
+
+    startBtn.addEventListener('click', () => {
+      currentLevelIndex = 0;
+      score = 0;
+      correctChars = 0;
+      totalTyped = 0;
+      messageDiv.textContent = '';
+      levelNameDiv.textContent = 'سطح: ' + levels[currentLevelIndex].name;
+      input.disabled = false;
+      startBtn.disabled = true;
+      setNewSentence();
+      startTimer();
+      input.focus();
+      updateScoreBoard();
+    });
+
+    // صفحه بارگذاری اولیه
+    window.onload = () => {
+      levelNameDiv.textContent = 'سطح: ' + levels[currentLevelIndex].name;
+      sentenceDiv.textContent = 'برای شروع بازی روی دکمه کلیک کنید';
+    };
+  </script>
+</body>
+</html>
